@@ -1,20 +1,29 @@
-import { FastifyReply, FastifyRequest } from 'fastify'
-import { CreateUserUseCase } from '../../usecases/users/create-user-usecase'
-import { UserRepository } from '../../repositories/users/UsersRepository'
-import { FindByIdUsersController } from './FindByIdController'
-import { FindAllUsersController } from './FindAllController'
-import { DeleteUsersController } from './DeleteController'
+import { FastifyReply, FastifyRequest } from "fastify"
+import { UpdateUserUseCase } from "../../usecases/users/update-user-usecase"
+import { UsersRepository } from "../../repositories/users/UsersRepository"
+import { string } from "zod"
 
-const UserRepo = new UserRepository()
+type UpdateUserRequest = {
+    Params: { id: string}
+    Body: {
+        name?: string
+        email?: string
+        phone?: string
+        password?: string
+    }
+}
 
-export class UpdateUsersController {
-    async update(request: FastifyRequest<{ Params: { id: string }; Body: any }>, reply: FastifyReply) {
+export class UpdateUserController{
+    async handle(
+        request: FastifyRequest<UpdateUserRequest>,
+        reply: FastifyReply
+    ) {
         try {
-          const usecase = new UpdateUserUseCase(UserRepo)
-          const updated = await usecase.execute(request.params.id, request.body)
-          return reply.send(updated)
-        } catch (error: any) {
-          return reply.status(400).send({ error: error.message })
+            const usecase = new UpdateUserUseCase(new UsersRepository())
+            const result = await usecase.execute(request.params.id, request.body)
+            return reply.send(result)
+        } catch (err: any) {
+            return reply.status(400).send({ error: err.message })
         }
-      }
+    }
 }
